@@ -5,7 +5,7 @@ class LoginController extends ChangeNotifier {
   final TextEditingController passwordController = TextEditingController();
 
   final _mockUser = 'teste@gmail.com';
-  final _mockPass = '1234';
+  String _mockPass = '1234';
 
   String? errorMessage;
 
@@ -21,6 +21,12 @@ class LoginController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  void resetPassword(String newPass) {
+    _mockPass = newPass;
+    errorMessage = null;
+    notifyListeners();
   }
 
   void disposeFields() {

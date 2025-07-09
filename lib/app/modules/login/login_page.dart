@@ -13,6 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late final LoginController controller;
   final _formKey = GlobalKey<FormState>();
+  bool _isResetMode = false;
 
   @override
   void initState() {
@@ -31,6 +32,18 @@ class _LoginPageState extends State<LoginPage> {
       if (controller.validateCredentials()) {
         Modular.to.navigate('/home');
       }
+    }
+  }
+
+  void _resetPassword() {
+    if (_formKey.currentState!.validate()) {
+      final newPass = controller.passwordController.text.trim();
+      controller.resetPassword(newPass);
+      setState(() {
+        _isResetMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Senha atualizada com sucesso!')));
+      controller.passwordController.clear();
     }
   }
 
@@ -58,43 +71,45 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 24),
 
-                    Theme(
-                      data: Theme.of(context).copyWith(
-                        textSelectionTheme: TextSelectionThemeData(
-                          cursorColor: AppColors.primary,
-                          selectionColor: AppColors.primary.withOpacity(0.5),
-                          selectionHandleColor: AppColors.primary.withOpacity(0.5),
-                        ),
-                      ),
-                      child: TextFormField(
-                        controller: controller.userController,
-                        style: const TextStyle(color: AppColors.text),
-                        decoration: InputDecoration(
-                          labelText: 'Email*',
-                          labelStyle: const TextStyle(color: AppColors.text),
-                          filled: true,
-                          fillColor: Colors.white10,
-                          prefixIcon: const Icon(Icons.person, color: AppColors.text),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: AppColors.primary),
-                            borderRadius: BorderRadius.circular(8),
+                    if (!_isResetMode) ...[
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          textSelectionTheme: TextSelectionThemeData(
+                            cursorColor: AppColors.primary,
+                            selectionColor: AppColors.primary.withOpacity(0.5),
+                            selectionHandleColor: AppColors.primary.withOpacity(0.5),
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Campo obrigatório';
-                          }
-                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (!emailRegex.hasMatch(value)) {
-                            return 'Email inválido';
-                          }
-                          return null;
-                        },
+                        child: TextFormField(
+                          controller: controller.userController,
+                          style: const TextStyle(color: AppColors.text),
+                          decoration: InputDecoration(
+                            labelText: 'Email*',
+                            labelStyle: const TextStyle(color: AppColors.text),
+                            filled: true,
+                            fillColor: Colors.white10,
+                            prefixIcon: const Icon(Icons.person, color: AppColors.text),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(color: AppColors.primary),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Campo obrigatório';
+                            }
+                            final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                            if (!emailRegex.hasMatch(value)) {
+                              return 'Email inválido';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 26),
+                      const SizedBox(height: 26),
+                    ],
 
                     Theme(
                       data: Theme.of(context).copyWith(
@@ -109,11 +124,11 @@ class _LoginPageState extends State<LoginPage> {
                         obscureText: true,
                         style: const TextStyle(color: AppColors.text),
                         decoration: InputDecoration(
-                          labelText: 'Senha*',
+                          labelText: _isResetMode ? 'Nova Senha*' : 'Senha*',
                           labelStyle: const TextStyle(color: AppColors.text),
                           filled: true,
                           fillColor: Colors.white10,
-                          prefixIcon: const Icon(Icons.lock, color: AppColors.text),
+                          prefixIcon: Icon(_isResetMode ? Icons.lock_reset : Icons.lock, color: AppColors.text),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           focusedBorder: OutlineInputBorder(
                             borderSide: const BorderSide(color: AppColors.primary),
@@ -123,6 +138,9 @@ class _LoginPageState extends State<LoginPage> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Campo obrigatório';
+                          }
+                          if (_isResetMode && value.length < 4) {
+                            return 'Senha deve ter pelo menos 4 caracteres';
                           }
                           return null;
                         },
@@ -134,10 +152,16 @@ class _LoginPageState extends State<LoginPage> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Esqueceu sua senha?',
-                          style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
+                        onPressed: () {
+                          setState(() {
+                            _isResetMode = !_isResetMode;
+                            controller.passwordController.clear();
+                            controller.errorMessage = null;
+                          });
+                        },
+                        child: Text(
+                          _isResetMode ? 'Voltar ao login' : 'Esqueceu sua senha?',
+                          style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -148,14 +172,14 @@ class _LoginPageState extends State<LoginPage> {
                       height: 56,
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _login,
+                        onPressed: _isResetMode ? _resetPassword : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.secondary,
                           textStyle: const TextStyle(fontWeight: FontWeight.bold),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: const Text('ENTRAR'),
+                        child: Text(_isResetMode ? 'SALVAR NOVA SENHA' : 'ENTRAR'),
                       ),
                     ),
 
