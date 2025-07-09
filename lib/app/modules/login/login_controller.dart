@@ -4,7 +4,7 @@ class LoginController extends ChangeNotifier {
   final TextEditingController userController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  final _mockUser = 'admin';
+  final _mockUser = 'teste@gmail.com';
   final _mockPass = '1234';
 
   String? errorMessage;
