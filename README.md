@@ -9,7 +9,7 @@ Este projeto é uma **plataforma de vídeos** desenvolvida com Flutter, com o ob
 ## 📱 Funcionalidades
 
 - ✅ Tela de Login com validação de campos
-- ✅ Exibição de vídeos em formato de **Grade 4xN**
+- ✅ Exibição de vídeos em formato de **Grade**
 - ✅ Diálogo com player de vídeo integrado (YouTube)
 - ✅ Estilo visual fiel ao Figma
 - ✅ Carregamento dinâmico de vídeos via **API REST mock**
