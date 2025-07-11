@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:projeto_teste/app/modules/home/widgets/video_dialog.dart';
 
 import 'home_controller.dart';
-import 'models/video_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,103 +19,86 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     controller = Modular.get<HomeController>();
-  }
-
-  void _openVideoDialog(VideoModel video) {
-    final videoId = YoutubePlayerController.convertUrlToId(video.youtubeUrl);
-    if (videoId == null) return;
-
-    final playerController = YoutubePlayerController(params: const YoutubePlayerParams(showControls: true, showFullscreenButton: true));
-
-    playerController.loadVideoById(videoId: videoId);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        final size = MediaQuery.of(context).size;
-        final dialogWidth = size.width * 0.8;
-        final dialogHeight = size.height * 0.8;
-
-        return AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          content: SizedBox(
-            width: dialogWidth,
-            height: dialogHeight,
-            child: YoutubePlayerScaffold(
-              controller: playerController,
-              builder: (context, player) => ClipRRect(borderRadius: BorderRadius.circular(12), child: player),
-            ),
-          ),
-        );
-      },
-    );
+    controller.fetchVideos();
   }
 
   @override
   Widget build(BuildContext context) {
-    final videos = controller.videos;
-
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(image: AssetImage('assets/login_background.png'), fit: BoxFit.cover),
-        ),
-        child: Container(
-          color: Colors.black.withOpacity(0.6),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  Text(
-                    'O que deseja assistir?',
-                    style: GoogleFonts.exo2(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      shadows: const [Shadow(offset: Offset(2, 2), blurRadius: 4, color: Colors.black54)],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: SizedBox(
-                      width: 1000,
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.all(12),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/login_background.png', fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.8)),
+
+          Column(
+            children: [
+              const SizedBox(height: 60),
+              Text(
+                'O que deseja assistir ?',
+                style: GoogleFonts.poppins(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: controller,
+                  builder: (_, __) {
+                    if (controller.isLoading) {
+                      return const Center(child: CircularProgressIndicator(color: Colors.white));
+                    } else if (controller.error != null) {
+                      return Center(
+                        child: Text(controller.error!, style: const TextStyle(color: Colors.redAccent)),
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: videos.length,
+                          itemCount: controller.videos.length,
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 12,
+                            crossAxisCount: 7,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 0.6,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 9 / 14,
                           ),
                           itemBuilder: (_, index) {
-                            final video = videos[index];
+                            final video = controller.videos[index];
                             return GestureDetector(
-                              onTap: () => _openVideoDialog(video),
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => VideoDialog(videoUrl: video.url),
+                                );
+                              },
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    Image.network(video.thumbnailUrl, fit: BoxFit.cover),
+                                    Image.network(
+                                      video.thumbnail ?? '',
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        color: Colors.grey,
+                                        child: const Icon(Icons.error, color: Colors.white),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                        ),
+                                      ),
+                                    ),
                                     Align(
                                       alignment: Alignment.bottomCenter,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                        color: Colors.black87,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           video.title,
-                                          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
                                           textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                                         ),
                                       ),
                                     ),
@@ -126,15 +108,14 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+                      );
+                    }
+                  },
+                ),
               ),
-            ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:projeto_teste/app/modules/home/home_module.dart';
-import 'package:projeto_teste/app/modules/login/login_module.dart';
+import 'modules/login/login_module.dart';
+import 'modules/home/home_module.dart';
 
 class AppModule extends Module {
   @override
