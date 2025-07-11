@@ -38,12 +38,12 @@ O design do projeto foi baseado no seguinte protótipo:
 
 ---
 
-## 🌐 API de Vídeos (Mocki)
+## 🌐 API de Vídeos (criada no https://mocki.io )
 
 Os vídeos são carregados de uma API simulada:
 
 ```bash
-https://mocki.io/v1/c7324389-d62d-4f64-8c26-91b01a6b5b30
+https://mocki.io/v1/4d78523e-5b9c-4c2e-b571-d11f1f51c15a
 ```
 ## 📂 Estrutura de Pastas
 ```
@@ -77,10 +77,9 @@ main.dart                          # Entrada do aplicativo
 ## 🚀 Como Rodar Localmente
 🔧 Passos:
 ```
-/lib
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/seu-repo.git
-cd seu-repo
+git clone https://github.com/seu-usuario/repo-do-git.git
+cd repo-do-git
 
 # 2. Instale as dependências
 flutter pub get
